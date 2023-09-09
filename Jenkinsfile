@@ -3,7 +3,7 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '5'))
     }
 
-    agent { label 'jenkins-slave-team-A' }
+    agent any
 
     tools {
         maven 'maven_3.9.4'
@@ -30,5 +30,64 @@ pipeline {
                 sh 'mvn clean package'
             }
         }
-	}
+        stage('Building & Tag Docker Image') {
+            steps {
+                echo 'Starting Building Docker Image'
+                sh "docker build -t satyam88/booking.com:${BUILD_NUMBER} ."
+                sh "docker build -t booking.com:${BUILD_NUMBER} ."
+                echo 'Completed Building Docker Image'
+            }
+        }
+        stage('Docker Image Scanning') {
+            steps {
+                echo 'Docker Image Scanning Started'
+                sh 'java -version'
+                echo 'Docker Image Scanning Started'
+            }
+        }
+        stage('Docker push to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'dockerhubCred', variable: 'dockerhubCred')]) {
+                        sh "docker login docker.io -u satyam88 -p ${dockerhubCred}"
+                        echo "Push Docker Image to DockerHub: In Progress"
+                        sh "docker push satyam88/booking.com:${BUILD_NUMBER}"
+                        echo "Push Docker Image to DockerHub: Completed"
+                    }
+                }
+            }
+        }
+        stage('Docker Image Push to Amazon ECR') {
+            steps {
+                script {
+                    withDockerRegistry([credentialsId: 'ecr:ap-south-1:ecr-credentials', url: "https://559220132560.dkr.ecr.ap-south-1.amazonaws.com"]) {
+                        sh """
+                        echo "Tagging the Docker Image: In Progress"
+                        docker tag booking.com:${BUILD_NUMBER} 559220132560.dkr.ecr.ap-south-1.amazonaws.com/booking.com:${BUILD_NUMBER}
+                        echo "Tagging the Docker Image: Completed"
+                        echo "Push Docker Image to ECR: In Progress"
+                        docker push 559220132560.dkr.ecr.ap-south-1.amazonaws.com/booking.com:${BUILD_NUMBER}
+                        echo "Push Docker Image to ECR: Completed"
+                        """
+                    }
+                }
+            }
+        }
+        stage('Docker Cleanup') {
+           steps {
+               script {
+                   // Get a list of dangling image IDs
+                   def danglingImages = sh(script: 'docker images -f dangling=true -q', returnStdout: true).trim()
+
+                   // Check if there are any dangling images before attempting removal
+                   if (danglingImages) {
+                       // Remove dangling images using docker rmi
+                       sh "docker rmi $danglingImages"
+                   } else {
+                       echo "No dangling images found."
+                   }
+               }
+           }
+        }
+    }
 }
