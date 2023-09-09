@@ -33,8 +33,8 @@ pipeline {
         stage('Building & Tag Docker Image') {
             steps {
                 echo 'Starting Building Docker Image'
-                sh "docker build -t satyam88/booking.com:${BUILD_NUMBER} ."
-                sh "docker build -t booking.com:${BUILD_NUMBER} ."
+                sh "docker build -t satyam88/booking.com:dev-booking-v.1.${BUILD_NUMBER} ."
+                sh "docker build -t booking.com:dev-booking-v.1.${BUILD_NUMBER} ."
                 echo 'Completed Building Docker Image'
             }
         }
@@ -51,7 +51,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'dockerhubCred', variable: 'dockerhubCred')]) {
                         sh "docker login docker.io -u satyam88 -p ${dockerhubCred}"
                         echo "Push Docker Image to DockerHub: In Progress"
-                        sh "docker push satyam88/booking.com:${BUILD_NUMBER}"
+                        sh "docker push satyam88/booking.com:dev-booking-v.1.${BUILD_NUMBER}"
                         echo "Push Docker Image to DockerHub: Completed"
                     }
                 }
@@ -63,10 +63,10 @@ pipeline {
                     withDockerRegistry([credentialsId: 'ecr:ap-south-1:ecr-credentials', url: "https://559220132560.dkr.ecr.ap-south-1.amazonaws.com"]) {
                         sh """
                         echo "Tagging the Docker Image: In Progress"
-                        docker tag booking.com:${BUILD_NUMBER} 559220132560.dkr.ecr.ap-south-1.amazonaws.com/booking.com:${BUILD_NUMBER}
+                        docker tag booking.com:dev-booking-v.1.${BUILD_NUMBER} 559220132560.dkr.ecr.ap-south-1.amazonaws.com/booking.com:${BUILD_NUMBER}
                         echo "Tagging the Docker Image: Completed"
                         echo "Push Docker Image to ECR: In Progress"
-                        docker push 559220132560.dkr.ecr.ap-south-1.amazonaws.com/booking.com:${BUILD_NUMBER}
+                        docker push 559220132560.dkr.ecr.ap-south-1.amazonaws.com/booking.com:dev-booking-v.1.${BUILD_NUMBER}
                         echo "Push Docker Image to ECR: Completed"
                         """
                     }
