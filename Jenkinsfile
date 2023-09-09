@@ -63,7 +63,7 @@ pipeline {
                     withDockerRegistry([credentialsId: 'ecr:ap-south-1:ecr-credentials', url: "https://559220132560.dkr.ecr.ap-south-1.amazonaws.com"]) {
                         sh """
                         echo "Tagging the Docker Image: In Progress"
-                        docker tag booking.com:dev-booking-v.1.${BUILD_NUMBER} 559220132560.dkr.ecr.ap-south-1.amazonaws.com/booking.com:${BUILD_NUMBER}
+                        docker tag booking.com:dev-booking-v.1.${BUILD_NUMBER} 559220132560.dkr.ecr.ap-south-1.amazonaws.com/booking.com:dev-booking-v.1.${BUILD_NUMBER}
                         echo "Tagging the Docker Image: Completed"
                         echo "Push Docker Image to ECR: In Progress"
                         docker push 559220132560.dkr.ecr.ap-south-1.amazonaws.com/booking.com:dev-booking-v.1.${BUILD_NUMBER}
