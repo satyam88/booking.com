@@ -73,5 +73,10 @@ pipeline {
                 }
             }
         }
+        stage('Deploy App to K8s Cluster') {
+            steps {
+                sh 'kubectl apply -f kubernetes/dev'
+            }
+        }
     }
 }
