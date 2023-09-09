@@ -73,21 +73,5 @@ pipeline {
                 }
             }
         }
-        stage('Docker Cleanup') {
-           steps {
-               script {
-                   // Get a list of dangling image IDs
-                   def danglingImages = sh(script: 'docker images -f dangling=true -q', returnStdout: true).trim()
-
-                   // Check if there are any dangling images before attempting removal
-                   if (danglingImages) {
-                       // Remove dangling images using docker rmi
-                       sh "docker rmi $danglingImages"
-                   } else {
-                       echo "No dangling images found."
-                   }
-               }
-           }
-        }
     }
 }
